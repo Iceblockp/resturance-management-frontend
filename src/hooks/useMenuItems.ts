@@ -73,8 +73,8 @@ export const useMenuItems = () => {
   const deleteCategoryMutation = useDeleteCategoryMutation();
 
   // Determine if we should use default data
-  const menuItems = menuItemsData.length ? menuItemsData : defaultMenuItems;
-  const categories = categoriesData.length ? categoriesData : defaultCategories;
+  const menuItems = menuItemsData.length ? menuItemsData : [];
+  const categories = categoriesData.length ? categoriesData : [];
 
   // Loading and error states
   const loading = menuItemsLoading || categoriesLoading;

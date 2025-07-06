@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MenuItem, Category } from "../types/order";
 import { useMenuItems } from "../hooks/useMenuItems";
 import {
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Loader } from "lucide-react";
 import { formatCurrencyMMK } from "../data/currency";
+import { ImageUploader } from "./ImageUploader";
 
 export const ProductManagement: React.FC = () => {
   const {
@@ -55,7 +56,6 @@ export const ProductManagement: React.FC = () => {
     isAvailable: true,
     ingredients: [] as string[],
   });
-
   const [categoryForm, setCategoryForm] = useState({
     name: "",
     description: "",
@@ -63,6 +63,14 @@ export const ProductManagement: React.FC = () => {
     isActive: true,
     sortOrder: 1,
   });
+
+  // Add state for image input type
+  const [productImageInputType, setProductImageInputType] = useState<
+    "url" | "upload"
+  >("upload");
+  const [categoryImageInputType, setCategoryImageInputType] = useState<
+    "url" | "upload"
+  >("upload");
 
   const resetItemForm = () => {
     setItemForm({
@@ -78,6 +86,18 @@ export const ProductManagement: React.FC = () => {
     setEditingItem(null);
     setShowItemForm(false);
   };
+
+  console.log("cc", categories, getActiveCategories());
+  console.log("first,", itemForm);
+
+  useEffect(() => {
+    if (categories.length > 0 && !itemForm.categoryId) {
+      setItemForm((prev) => ({
+        ...prev,
+        categoryId: categories[0].id,
+      }));
+    }
+  }, [categories]);
 
   const resetCategoryForm = () => {
     setCategoryForm({
@@ -555,6 +575,81 @@ export const ProductManagement: React.FC = () => {
 
               <form onSubmit={handleItemSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className=" col-span-1 sm:col-span-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Image
+                      </label>
+                      <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                        <button
+                          type="button"
+                          onClick={() => setProductImageInputType("upload")}
+                          className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                            productImageInputType === "upload"
+                              ? "bg-white shadow"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          Upload
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setProductImageInputType("url")}
+                          className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                            productImageInputType === "url"
+                              ? "bg-white shadow"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          URL
+                        </button>
+                      </div>
+                    </div>
+
+                    {productImageInputType === "upload" ? (
+                      <ImageUploader
+                        onImageUploaded={(imageUrl) =>
+                          setItemForm((prev) => ({
+                            ...prev,
+                            image: imageUrl,
+                          }))
+                        }
+                        currentImageUrl={itemForm.image}
+                        folder="products"
+                      />
+                    ) : (
+                      <div className="mb-4">
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            value={itemForm.image}
+                            onChange={(e) =>
+                              setItemForm((prev) => ({
+                                ...prev,
+                                image: e.target.value,
+                              }))
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="https://example.com/image.jpg"
+                          />
+                          {itemForm.image && (
+                            <div className="w-12 h-12 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
+                              <img
+                                src={itemForm.image}
+                                alt="Preview"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    "https://via.placeholder.com/150?text=Invalid+URL";
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Name
@@ -798,6 +893,80 @@ export const ProductManagement: React.FC = () => {
 
               <form onSubmit={handleCategorySubmit} className="space-y-4">
                 <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Image
+                    </label>
+                    <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                      <button
+                        type="button"
+                        onClick={() => setCategoryImageInputType("upload")}
+                        className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                          categoryImageInputType === "upload"
+                            ? "bg-white shadow"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        Upload
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCategoryImageInputType("url")}
+                        className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                          categoryImageInputType === "url"
+                            ? "bg-white shadow"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {categoryImageInputType === "upload" ? (
+                    <ImageUploader
+                      onImageUploaded={(imageUrl) =>
+                        setCategoryForm((prev) => ({
+                          ...prev,
+                          image: imageUrl,
+                        }))
+                      }
+                      currentImageUrl={categoryForm.image}
+                      folder="categories"
+                    />
+                  ) : (
+                    <div className="mb-4">
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={categoryForm.image}
+                          onChange={(e) =>
+                            setCategoryForm((prev) => ({
+                              ...prev,
+                              image: e.target.value,
+                            }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="https://example.com/image.jpg"
+                        />
+                        {categoryForm.image && (
+                          <div className="w-12 h-12 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
+                            <img
+                              src={categoryForm.image}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  "https://via.placeholder.com/150?text=Invalid+URL";
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Name
                   </label>
@@ -829,24 +998,6 @@ export const ProductManagement: React.FC = () => {
                     }
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={categoryForm.image}
-                    onChange={(e) =>
-                      setCategoryForm((prev) => ({
-                        ...prev,
-                        image: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="https://example.com/image.jpg"
                   />
                 </div>
 
